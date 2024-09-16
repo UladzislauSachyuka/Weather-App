@@ -6,6 +6,9 @@ import CloudyDayIcon from './assets/SVG/cloudyDay';
 import CloudyNightIcon from './assets/SVG/cloudyNight';
 import CloudyIcon from './assets/SVG/cloudy';
 import RainIcon from './assets/SVG/rain';
+import TempIcon from './assets/SVG/temp';
+import HumidityIcon from './assets/SVG/humidity';
+import WindIcon from './assets/SVG/wind';
 import './styles/App.css'
 
 function App() {
@@ -96,8 +99,8 @@ function App() {
     return formattedTime;
   };
 
-  const formatTemp = (temp) => {
-    return Math.round(temp);
+  const format = (num) => {
+    return Math.round(num);
   };
 
   const getWeatherIcon = (condition) => {
@@ -121,26 +124,67 @@ function App() {
         <div className="errorMessage">Location not found</div>
       ) : (
         forecast && (
-          <div className="leftBlock">
-            <text className="conditionsText">{forecast["currentConditions"]["conditions"]}</text>
-            <text className="cityText">{forecast["resolvedAddress"].split(',')[0]}</text>
-            <text className="dateText">{currentDate}</text>
-            <text className="timeText">{currentTime}</text>
-            <text className="tempText">{formatTemp(forecast["currentConditions"]["temp"]) + " °C"}</text>
-            <div className="weatherIcon"> 
-              {getWeatherIcon(forecast["currentConditions"]["conditions"])}
+          <div className="topContainer"> 
+            <div className="leftBlock">
+              <text className="conditionsText">{forecast["currentConditions"]["conditions"]}</text>
+              <text className="cityText">{forecast["resolvedAddress"].split(',')[0]}</text>
+              <text className="dateText">{currentDate}</text>
+              <text className="timeText">{currentTime}</text>
+              <text className="tempText">{format(forecast["currentConditions"]["temp"]) + " °C"}</text>
+              <div className="weatherIcon"> 
+                {getWeatherIcon(forecast["currentConditions"]["conditions"])}
+              </div>
+              <div className="searchBox">
+                <input
+                  type="text"
+                  className="searchBoxInput"
+                  placeholder="Search Location..."
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                />
+                <div className="searchIcon" onClick={handleSearch}></div>
+              </div>
             </div>
-            <div className="searchBox">
-              <input
-                type="text"
-                className="searchBoxInput"
-                placeholder="Search Location..."
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-              />
-              <div className="searchIcon" onClick={handleSearch}></div>
+            <div className="rightBlock"> 
+              <div className="row">
+                <div className="rightIcon">
+                  <TempIcon />
+                </div>
+                <div className="indicator"> 
+                  <text className="rightText">Feels like</text>
+                  <text className="indicatorText">{format(forecast["currentConditions"]["feelslike"]) + " °C"}</text>
+                </div>
+              </div>
+              <div className="row">
+                <div className="rightIcon"> 
+                  <HumidityIcon />
+                </div>
+                <div className="indicator">
+                  <text className="rightText">Humidity</text>
+                  <text className="indicatorText">{format(forecast["currentConditions"]["humidity"]) + " %"}</text>
+                </div>
+              </div>
+              <div className="row">
+                <div className="rightIcon"> 
+                  <RainIcon />
+                </div>
+                <div className="indicator">
+                  <text className="rightText">Chance of Rain</text>
+                  <text className="indicatorText">{forecast["currentConditions"]["precipprob"] + " %"}</text>
+                </div>
+              </div>
+              <div className="row">
+                <div className="rightIcon"> 
+                  <WindIcon />
+                </div>
+                <div className="indicator">
+                  <text className="rightText">Wind Speed</text>
+                  <text className="indicatorText">{forecast["currentConditions"]["windspeed"] + " km/h"}</text>
+                </div>
+              </div>
             </div>
           </div>
+          
         )
       )}
       
