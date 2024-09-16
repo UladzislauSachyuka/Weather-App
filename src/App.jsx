@@ -21,7 +21,6 @@ function App() {
   const [inputValue, setInputValue] = useState("");
   const [currentDate, setCurrentDate] = useState("");
   const [currentTime, setCurrentTime] = useState("");
-  const [isDay, setIsDay] = useState(true);
   const [activeButton, setActiveButton] = useState("daily");
 
   useEffect(() => {
@@ -35,10 +34,8 @@ function App() {
 
         const now = new Date();
         const localTime = getLocalTime(now, data.tzoffset);
-        const dayTime = isDayTime(localTime, data.currentConditions.sunrise, data.currentConditions.sunset);
         setCurrentDate(formatDate(localTime));
         setCurrentTime(formatTime(localTime));
-        setIsDay(dayTime);
       } catch (error) {
         setError(true);
         setForecast(null);
@@ -53,21 +50,6 @@ function App() {
     const utcTime = date.getTime() + date.getTimezoneOffset() * 60000; // Преобразуем в UTC
     const localTime = new Date(utcTime + tzoffset * 3600000); // Добавляем смещение часового пояса
     return localTime;
-  };
-
-  const isDayTime = (localTime, sunrise, sunset) => {
-    const [sunriseHours, sunriseMinutes, sunriseSeconds] = sunrise.split(':').map(Number);
-    const sunriseInSeconds = sunriseHours * 3600 + sunriseMinutes * 60 + sunriseSeconds;
-
-    const [sunsetHours, sunsetMinutes, sunsetSeconds] = sunset.split(':').map(Number);
-    const sunsetInSeconds = sunsetHours * 3600 + sunsetMinutes * 60 + sunsetSeconds;
-
-    const currentHours = localTime.getHours();
-    const currentMinutes = localTime.getMinutes();
-    const currentSeconds = localTime.getSeconds();
-    const currentTimeInSeconds = currentHours * 3600 + currentMinutes * 60 + currentSeconds;
-
-    return (currentTimeInSeconds > sunriseInSeconds && currentTimeInSeconds < sunsetInSeconds);
   };
 
   const handleSearch = () => {
@@ -106,22 +88,7 @@ function App() {
     return Math.round(num);
   };
 
-  const getWeatherIcon = (condition, forecast = false) => {
-    switch (condition) {
-      case "Clear":
-        return forecast ? <SunIcon /> : isDay ? <SunIcon /> : <MoonIcon />
-      case "Partially cloudy":
-        return forecast ? <CloudyDayIcon /> : isDay ? <CloudyDayIcon /> : <CloudyNightIcon />
-      case "Overcast":
-        return <CloudyIcon />
-      case "Rain, Overcast":
-        return <RainIcon />
-      case "Snow":
-        return <SnowIcon />
-    }
-  };
-
-  const getIcon = (iconName) => {
+  const getWeatherIcon = (iconName) => {
     switch (iconName) {
       case "clear-day":
         return <SunIcon />
@@ -164,7 +131,7 @@ function App() {
               <p className="forecastDay">{hourTime}</p>
               <p className="forecastTemp">{Math.round(hour.temp)} °C</p>
               <div className="forecastIcon">
-                {getIcon(hour.icon)}
+                {getWeatherIcon(hour.icon)}
               </div>
             </div>
           );
@@ -184,13 +151,13 @@ function App() {
           <div> 
             <div className="topContainer"> 
               <div className="leftBlock">
-                <text className="conditionsText">{forecast["currentConditions"]["conditions"]}</text>
-                <text className="cityText">{forecast["resolvedAddress"].split(',')[0]}</text>
-                <text className="dateText">{currentDate}</text>
-                <text className="timeText">{currentTime}</text>
-                <text className="tempText">{format(forecast["currentConditions"]["temp"]) + " °C"}</text>
+                <p className="conditionsText">{forecast["currentConditions"]["conditions"]}</p>
+                <p className="cityText">{forecast["resolvedAddress"].split(',')[0]}</p>
+                <p className="dateText">{currentDate}</p>
+                <p className="timeText">{currentTime}</p>
+                <p className="tempText">{format(forecast["currentConditions"]["temp"]) + " °C"}</p>
                 <div className="weatherIcon"> 
-                  {getWeatherIcon(forecast["currentConditions"]["conditions"])}
+                  {getWeatherIcon(forecast["currentConditions"]["icon"])}
                 </div>
                 <div className="searchBox">
                   <input
@@ -209,8 +176,8 @@ function App() {
                     <TempIcon />
                   </div>
                   <div className="indicator"> 
-                    <text className="rightText">Feels like</text>
-                    <text className="indicatorText">{format(forecast["currentConditions"]["feelslike"]) + " °C"}</text>
+                    <p className="rightText">Feels like</p>
+                    <p className="indicatorText">{format(forecast["currentConditions"]["feelslike"]) + " °C"}</p>
                   </div>
                 </div>
                 <div className="row">
@@ -218,8 +185,8 @@ function App() {
                     <HumidityIcon />
                   </div>
                   <div className="indicator">
-                    <text className="rightText">Humidity</text>
-                    <text className="indicatorText">{format(forecast["currentConditions"]["humidity"]) + " %"}</text>
+                    <p className="rightText">Humidity</p>
+                    <p className="indicatorText">{format(forecast["currentConditions"]["humidity"]) + " %"}</p>
                   </div>
                 </div>
                 <div className="row">
@@ -227,8 +194,8 @@ function App() {
                     <RainIcon />
                   </div>
                   <div className="indicator">
-                    <text className="rightText">Chance of Rain</text>
-                    <text className="indicatorText">{forecast["currentConditions"]["precipprob"] + " %"}</text>
+                    <p className="rightText">Chance of Rain</p>
+                    <p className="indicatorText">{forecast["currentConditions"]["precipprob"] + " %"}</p>
                   </div>
                 </div>
                 <div className="row">
@@ -236,8 +203,8 @@ function App() {
                     <WindIcon />
                   </div>
                   <div className="indicator">
-                    <text className="rightText">Wind Speed</text>
-                    <text className="indicatorText">{forecast["currentConditions"]["windspeed"] + " km/h"}</text>
+                    <p className="rightText">Wind Speed</p>
+                    <p className="indicatorText">{forecast["currentConditions"]["windspeed"] + " km/h"}</p>
                   </div>
                 </div>
               </div>
@@ -268,7 +235,7 @@ function App() {
                         <p className="forecastTemp">{Math.round(day["tempmax"])} °C</p>
                         <p>{Math.round(day["tempmin"])} °C</p>
                         <div className="forecastIcon">
-                          {getWeatherIcon(day["conditions"], true)}
+                          {getWeatherIcon(day["icon"])}
                         </div>
                       </div>
                     );
