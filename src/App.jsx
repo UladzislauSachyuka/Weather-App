@@ -9,6 +9,8 @@ import RainIcon from './assets/SVG/rain';
 import TempIcon from './assets/SVG/temp';
 import HumidityIcon from './assets/SVG/humidity';
 import WindIcon from './assets/SVG/wind';
+import SnowIcon from './assets/SVG/snow';
+import ThunderIcon from './assets/SVG/thunder';
 import './styles/App.css'
 
 function App() {
@@ -103,16 +105,18 @@ function App() {
     return Math.round(num);
   };
 
-  const getWeatherIcon = (condition) => {
+  const getWeatherIcon = (condition, forecast = false) => {
     switch (condition) {
       case "Clear":
-        return isDay ? <SunIcon /> : <MoonIcon />;
+        return forecast ? <SunIcon /> : isDay ? <SunIcon /> : <MoonIcon />;
       case "Partially cloudy":
-        return isDay ? <CloudyDayIcon /> : <CloudyNightIcon />;
+        return forecast ? <CloudyDayIcon /> : isDay ? <CloudyDayIcon /> : <CloudyNightIcon />;
       case "Overcast":
         return <CloudyIcon />
       case "Rain, Overcast":
         return <RainIcon />
+      case "Snow":
+        return <SnowIcon />
     }
   };
 
@@ -124,67 +128,86 @@ function App() {
         <div className="errorMessage">Location not found</div>
       ) : (
         forecast && (
-          <div className="topContainer"> 
-            <div className="leftBlock">
-              <text className="conditionsText">{forecast["currentConditions"]["conditions"]}</text>
-              <text className="cityText">{forecast["resolvedAddress"].split(',')[0]}</text>
-              <text className="dateText">{currentDate}</text>
-              <text className="timeText">{currentTime}</text>
-              <text className="tempText">{format(forecast["currentConditions"]["temp"]) + " °C"}</text>
-              <div className="weatherIcon"> 
-                {getWeatherIcon(forecast["currentConditions"]["conditions"])}
+          <div> 
+            <div className="topContainer"> 
+              <div className="leftBlock">
+                <text className="conditionsText">{forecast["currentConditions"]["conditions"]}</text>
+                <text className="cityText">{forecast["resolvedAddress"].split(',')[0]}</text>
+                <text className="dateText">{currentDate}</text>
+                <text className="timeText">{currentTime}</text>
+                <text className="tempText">{format(forecast["currentConditions"]["temp"]) + " °C"}</text>
+                <div className="weatherIcon"> 
+                  {getWeatherIcon(forecast["currentConditions"]["conditions"])}
+                </div>
+                <div className="searchBox">
+                  <input
+                    type="text"
+                    className="searchBoxInput"
+                    placeholder="Search Location..."
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                  />
+                  <div className="searchIcon" onClick={handleSearch}></div>
+                </div>
               </div>
-              <div className="searchBox">
-                <input
-                  type="text"
-                  className="searchBoxInput"
-                  placeholder="Search Location..."
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                />
-                <div className="searchIcon" onClick={handleSearch}></div>
+              <div className="rightBlock"> 
+                <div className="row">
+                  <div className="rightIcon">
+                    <TempIcon />
+                  </div>
+                  <div className="indicator"> 
+                    <text className="rightText">Feels like</text>
+                    <text className="indicatorText">{format(forecast["currentConditions"]["feelslike"]) + " °C"}</text>
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="rightIcon"> 
+                    <HumidityIcon />
+                  </div>
+                  <div className="indicator">
+                    <text className="rightText">Humidity</text>
+                    <text className="indicatorText">{format(forecast["currentConditions"]["humidity"]) + " %"}</text>
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="rightIcon"> 
+                    <RainIcon />
+                  </div>
+                  <div className="indicator">
+                    <text className="rightText">Chance of Rain</text>
+                    <text className="indicatorText">{forecast["currentConditions"]["precipprob"] + " %"}</text>
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="rightIcon"> 
+                    <WindIcon />
+                  </div>
+                  <div className="indicator">
+                    <text className="rightText">Wind Speed</text>
+                    <text className="indicatorText">{forecast["currentConditions"]["windspeed"] + " km/h"}</text>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="rightBlock"> 
-              <div className="row">
-                <div className="rightIcon">
-                  <TempIcon />
-                </div>
-                <div className="indicator"> 
-                  <text className="rightText">Feels like</text>
-                  <text className="indicatorText">{format(forecast["currentConditions"]["feelslike"]) + " °C"}</text>
-                </div>
-              </div>
-              <div className="row">
-                <div className="rightIcon"> 
-                  <HumidityIcon />
-                </div>
-                <div className="indicator">
-                  <text className="rightText">Humidity</text>
-                  <text className="indicatorText">{format(forecast["currentConditions"]["humidity"]) + " %"}</text>
-                </div>
-              </div>
-              <div className="row">
-                <div className="rightIcon"> 
-                  <RainIcon />
-                </div>
-                <div className="indicator">
-                  <text className="rightText">Chance of Rain</text>
-                  <text className="indicatorText">{forecast["currentConditions"]["precipprob"] + " %"}</text>
-                </div>
-              </div>
-              <div className="row">
-                <div className="rightIcon"> 
-                  <WindIcon />
-                </div>
-                <div className="indicator">
-                  <text className="rightText">Wind Speed</text>
-                  <text className="indicatorText">{forecast["currentConditions"]["windspeed"] + " km/h"}</text>
-                </div>
+            <div className="bottomContainer">
+              <div className="forecastContainer">
+                {forecast["days"].slice(0, 10).map((day, index) => {
+                  const dayOfWeek = new Date(day.datetime).toLocaleDateString('en-US', { weekday: 'long' });
+                  
+                  return (
+                    <div className="forecastCard" key={index}>
+                      <p className="forecastDay">{dayOfWeek}</p>
+                      <p className="forecastTemp">{Math.round(day["tempmax"])} °C</p>
+                      <p>{Math.round(day["tempmin"])} °C</p>
+                      <div className="forecastIcon">
+                        {getWeatherIcon(day["conditions"], true)}
+                      </div>
+                    </div>
+                  );
+                })} 
               </div>
             </div>
           </div>
-          
         )
       )}
       
