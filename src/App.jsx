@@ -22,6 +22,7 @@ function App() {
   const [currentDate, setCurrentDate] = useState("");
   const [currentTime, setCurrentTime] = useState("");
   const [isDay, setIsDay] = useState(true);
+  const [activeButton, setActiveButton] = useState("daily");
 
   useEffect(() => {
     const fetchForecast = async () => {
@@ -108,9 +109,9 @@ function App() {
   const getWeatherIcon = (condition, forecast = false) => {
     switch (condition) {
       case "Clear":
-        return forecast ? <SunIcon /> : isDay ? <SunIcon /> : <MoonIcon />;
+        return forecast ? <SunIcon /> : isDay ? <SunIcon /> : <MoonIcon />
       case "Partially cloudy":
-        return forecast ? <CloudyDayIcon /> : isDay ? <CloudyDayIcon /> : <CloudyNightIcon />;
+        return forecast ? <CloudyDayIcon /> : isDay ? <CloudyDayIcon /> : <CloudyNightIcon />
       case "Overcast":
         return <CloudyIcon />
       case "Rain, Overcast":
@@ -119,6 +120,58 @@ function App() {
         return <SnowIcon />
     }
   };
+
+  const getIcon = (iconName) => {
+    switch (iconName) {
+      case "clear-day":
+        return <SunIcon />
+      case "clear-night":
+        return <MoonIcon />
+      case "cloudy":
+        return <CloudyIcon />
+      case "partly-cloudy-day":
+        return <CloudyDayIcon />
+      case "partly-cloudy-night":
+        return <CloudyNightIcon />
+    }
+  }
+
+  const handleButtonClick = (button) => {
+    setActiveButton(button);
+  };
+
+  const renderHourlyForecast = () => {
+    const now = new Date();
+    const localTime = getLocalTime(now, forecast.tzoffset);
+    const startHour = localTime.getHours();
+  
+    const currentDayHours = forecast.days[0].hours.slice(startHour);
+    const nextDayHours = forecast.days[1].hours;
+  
+    const remainingHoursNeeded = 24 - currentDayHours.length;
+  
+    const hourlyForecast = currentDayHours.concat(nextDayHours.slice(0, remainingHoursNeeded));
+  
+    const hoursArray = Array.from({ length: 24 }, (_, index) => (startHour + index) % 24);
+  
+    return (
+      <div className="forecastContainer">
+        {hourlyForecast.map((hour, index) => {
+          const hourTime = hoursArray[index] + ":00";
+
+          return (
+            <div className="forecastCard" key={index}>
+              <p className="forecastDay">{hourTime}</p>
+              <p className="forecastTemp">{Math.round(hour.temp)} °C</p>
+              <div className="forecastIcon">
+                {getIcon(hour.icon)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };  
 
   return (
     <div className="app">
@@ -190,22 +243,40 @@ function App() {
               </div>
             </div>
             <div className="bottomContainer">
-              <div className="forecastContainer">
-                {forecast["days"].slice(0, 10).map((day, index) => {
-                  const dayOfWeek = new Date(day.datetime).toLocaleDateString('en-US', { weekday: 'long' });
-                  
-                  return (
-                    <div className="forecastCard" key={index}>
-                      <p className="forecastDay">{dayOfWeek}</p>
-                      <p className="forecastTemp">{Math.round(day["tempmax"])} °C</p>
-                      <p>{Math.round(day["tempmin"])} °C</p>
-                      <div className="forecastIcon">
-                        {getWeatherIcon(day["conditions"], true)}
-                      </div>
-                    </div>
-                  );
-                })} 
+              <div className="buttonsContainer"> 
+                <button 
+                  className={`button ${activeButton === "daily" ? "active" : ""}`}
+                  onClick={() => handleButtonClick("daily")}
+                >
+                  Daily
+                </button>
+                <button 
+                  className={`button ${activeButton === "hourly" ? "active" : ""}`} 
+                  onClick={() => handleButtonClick("hourly")}
+                >
+                  Hourly
+                </button>
               </div>
+              {activeButton === "daily" ? (
+                <div className="forecastContainer">
+                  {forecast["days"].slice(0, 10).map((day, index) => {
+                    const dayOfWeek = new Date(day.datetime).toLocaleDateString('en-US', { weekday: 'long' });
+                    
+                    return (
+                      <div className="forecastCard" key={index}>
+                        <p className="forecastDay">{dayOfWeek}</p>
+                        <p className="forecastTemp">{Math.round(day["tempmax"])} °C</p>
+                        <p>{Math.round(day["tempmin"])} °C</p>
+                        <div className="forecastIcon">
+                          {getWeatherIcon(day["conditions"], true)}
+                        </div>
+                      </div>
+                    );
+                  })} 
+                </div>
+              ) : (
+                renderHourlyForecast()
+              )}
             </div>
           </div>
         )
