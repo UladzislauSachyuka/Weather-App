@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react'
 import { getForecast } from './api/weatherApi';
 import SunIcon from './assets/SVG/sun';
+import MoonIcon from './assets/SVG/moon';
 import CloudyDayIcon from './assets/SVG/cloudyDay';
+import CloudyNightIcon from './assets/SVG/cloudyNight';
+import CloudyIcon from './assets/SVG/cloudy';
+import RainIcon from './assets/SVG/rain';
 import './styles/App.css'
 
 function App() {
@@ -12,6 +16,7 @@ function App() {
   const [inputValue, setInputValue] = useState("");
   const [currentDate, setCurrentDate] = useState("");
   const [currentTime, setCurrentTime] = useState("");
+  const [isDay, setIsDay] = useState(true);
 
   useEffect(() => {
     const fetchForecast = async () => {
@@ -24,8 +29,10 @@ function App() {
 
         const now = new Date();
         const localTime = getLocalTime(now, data.tzoffset);
+        const dayTime = isDayTime(localTime, data.currentConditions.sunrise, data.currentConditions.sunset);
         setCurrentDate(formatDate(localTime));
         setCurrentTime(formatTime(localTime));
+        setIsDay(dayTime);
       } catch (error) {
         setError(true);
         setForecast(null);
@@ -40,6 +47,21 @@ function App() {
     const utcTime = date.getTime() + date.getTimezoneOffset() * 60000; // Преобразуем в UTC
     const localTime = new Date(utcTime + tzoffset * 3600000); // Добавляем смещение часового пояса
     return localTime;
+  };
+
+  const isDayTime = (localTime, sunrise, sunset) => {
+    const [sunriseHours, sunriseMinutes, sunriseSeconds] = sunrise.split(':').map(Number);
+    const sunriseInSeconds = sunriseHours * 3600 + sunriseMinutes * 60 + sunriseSeconds;
+
+    const [sunsetHours, sunsetMinutes, sunsetSeconds] = sunset.split(':').map(Number);
+    const sunsetInSeconds = sunsetHours * 3600 + sunsetMinutes * 60 + sunsetSeconds;
+
+    const currentHours = localTime.getHours();
+    const currentMinutes = localTime.getMinutes();
+    const currentSeconds = localTime.getSeconds();
+    const currentTimeInSeconds = currentHours * 3600 + currentMinutes * 60 + currentSeconds;
+
+    return (currentTimeInSeconds > sunriseInSeconds && currentTimeInSeconds < sunsetInSeconds);
   };
 
   const handleSearch = () => {
@@ -81,9 +103,13 @@ function App() {
   const getWeatherIcon = (condition) => {
     switch (condition) {
       case "Clear":
-        return <SunIcon className="weatherIcon"/>;
+        return isDay ? <SunIcon /> : <MoonIcon />;
       case "Partially cloudy":
-        return <CloudyDayIcon className="weatherIcon"/>;
+        return isDay ? <CloudyDayIcon /> : <CloudyNightIcon />;
+      case "Overcast":
+        return <CloudyIcon />
+      case "Rain, Overcast":
+        return <RainIcon />
     }
   };
 
