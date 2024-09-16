@@ -1,5 +1,5 @@
 .app {
-  padding: 5vw;
+  padding: 3vw 5vw;
 }
 
 .loadingSpinner {
@@ -12,17 +12,48 @@
   text-align: center;
 }
 
+.errorMessage {
+  font-size: 24px;
+  color: #fff;
+}
+
 .leftBlock {
   display: flex;
   flex-direction: column;
-  row-gap: 10px;
   width: 20vw;
 }
 
 .conditionsText {
-  font-size: 20px;
+  font-size: 34px;
   font-weight: 500;
   color: #fff;
+}
+
+.cityText {
+  font-size: 18px;
+  color: #fff;
+}
+
+.dateText {
+  font-size: 16px;
+  color: #fff;
+}
+
+.timeText {
+  font-size: 16px;
+  color: #fff;
+}
+
+.tempText {
+  font-size: 52px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.weatherIcon {
+  width: 8vw;
+  height: 8vw;
 }
 
 .searchBox {
@@ -32,6 +63,7 @@
   justify-content: space-between;
   align-items: center;
   border-bottom: 2px solid #fff;
+  margin-top: 15px;
   padding: 0px 12px;
 }
 
