@@ -1,0 +1,27 @@
+.row {
+  display: flex;
+  flex-direction: row;
+  column-gap: 7px;
+}
+
+.rightIcon {
+  width: 25px;
+  height: 25px;
+}
+
+.indicator {
+  display: flex;
+  flex-direction: column;
+  row-gap: 5px;
+}
+
+.rightText {
+  font-size: 12px;
+  color: #fff;
+}
+
+.indicatorText {
+  font-size: 24px;
+  font-weight: 600;
+  color: #fff;
+}

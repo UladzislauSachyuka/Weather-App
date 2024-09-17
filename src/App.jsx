@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, act } from 'react'
 import { getForecast } from './api/weatherApi';
+import { format } from './utils';
+import IndicatorsSection from './components/IndicatorsSection';
+import MainSection from './components/MainSection';
+import Buttons from './components/Buttons';
 import SunIcon from './assets/SVG/sun';
 import MoonIcon from './assets/SVG/moon';
 import CloudyDayIcon from './assets/SVG/cloudyDay';
 import CloudyNightIcon from './assets/SVG/cloudyNight';
 import CloudyIcon from './assets/SVG/cloudy';
 import RainIcon from './assets/SVG/rain';
-import TempIcon from './assets/SVG/temp';
-import HumidityIcon from './assets/SVG/humidity';
-import WindIcon from './assets/SVG/wind';
 import SnowIcon from './assets/SVG/snow';
 import ThunderIcon from './assets/SVG/thunder';
 import './styles/App.css'
@@ -84,25 +85,6 @@ function App() {
     return formattedTime;
   };
 
-  const format = (num) => {
-    return Math.round(num);
-  };
-
-  const getWeatherIcon = (iconName) => {
-    switch (iconName) {
-      case "clear-day":
-        return <SunIcon />
-      case "clear-night":
-        return <MoonIcon />
-      case "cloudy":
-        return <CloudyIcon />
-      case "partly-cloudy-day":
-        return <CloudyDayIcon />
-      case "partly-cloudy-night":
-        return <CloudyNightIcon />
-    }
-  }
-
   const handleButtonClick = (button) => {
     setActiveButton(button);
   };
@@ -129,7 +111,7 @@ function App() {
           return (
             <div className="forecastCard" key={index}>
               <p className="forecastDay">{hourTime}</p>
-              <p className="forecastTemp">{Math.round(hour.temp)} °C</p>
+              <p className="forecastTemp">{format(hour.temp)} °C</p>
               <div className="forecastIcon">
                 {getWeatherIcon(hour.icon)}
               </div>
@@ -138,7 +120,22 @@ function App() {
         })}
       </div>
     );
-  };  
+  };
+  
+  const getWeatherIcon = (iconName) => {
+    switch (iconName) {
+      case "clear-day":
+        return <SunIcon />
+      case "clear-night":
+        return <MoonIcon />
+      case "cloudy":
+        return <CloudyIcon />
+      case "partly-cloudy-day":
+        return <CloudyDayIcon />
+      case "partly-cloudy-night":
+        return <CloudyNightIcon />
+    }
+  }
 
   return (
     <div className="app">
@@ -150,80 +147,23 @@ function App() {
         forecast && (
           <div> 
             <div className="topContainer"> 
-              <div className="leftBlock">
-                <p className="conditionsText">{forecast["currentConditions"]["conditions"]}</p>
-                <p className="cityText">{forecast["resolvedAddress"].split(',')[0]}</p>
-                <p className="dateText">{currentDate}</p>
-                <p className="timeText">{currentTime}</p>
-                <p className="tempText">{format(forecast["currentConditions"]["temp"]) + " °C"}</p>
-                <div className="weatherIcon"> 
-                  {getWeatherIcon(forecast["currentConditions"]["icon"])}
-                </div>
-                <div className="searchBox">
-                  <input
-                    type="text"
-                    className="searchBoxInput"
-                    placeholder="Search Location..."
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                  />
-                  <div className="searchIcon" onClick={handleSearch}></div>
-                </div>
+              <div className="leftBlock"> 
+                <MainSection 
+                  forecast={forecast} 
+                  currentDate={currentDate}
+                  currentTime={currentTime}
+                  inputValue={inputValue}
+                  setInputValue={setInputValue}
+                  handleSearch={handleSearch}
+                  getWeatherIcon={getWeatherIcon} 
+                />
               </div>
               <div className="rightBlock"> 
-                <div className="row">
-                  <div className="rightIcon">
-                    <TempIcon />
-                  </div>
-                  <div className="indicator"> 
-                    <p className="rightText">Feels like</p>
-                    <p className="indicatorText">{format(forecast["currentConditions"]["feelslike"]) + " °C"}</p>
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="rightIcon"> 
-                    <HumidityIcon />
-                  </div>
-                  <div className="indicator">
-                    <p className="rightText">Humidity</p>
-                    <p className="indicatorText">{format(forecast["currentConditions"]["humidity"]) + " %"}</p>
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="rightIcon"> 
-                    <RainIcon />
-                  </div>
-                  <div className="indicator">
-                    <p className="rightText">Chance of Rain</p>
-                    <p className="indicatorText">{forecast["currentConditions"]["precipprob"] + " %"}</p>
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="rightIcon"> 
-                    <WindIcon />
-                  </div>
-                  <div className="indicator">
-                    <p className="rightText">Wind Speed</p>
-                    <p className="indicatorText">{forecast["currentConditions"]["windspeed"] + " km/h"}</p>
-                  </div>
-                </div>
+                <IndicatorsSection forecast={forecast}/>
               </div>
             </div>
             <div className="bottomContainer">
-              <div className="buttonsContainer"> 
-                <button 
-                  className={`button ${activeButton === "daily" ? "active" : ""}`}
-                  onClick={() => handleButtonClick("daily")}
-                >
-                  Daily
-                </button>
-                <button 
-                  className={`button ${activeButton === "hourly" ? "active" : ""}`} 
-                  onClick={() => handleButtonClick("hourly")}
-                >
-                  Hourly
-                </button>
-              </div>
+              <Buttons activeButton={activeButton} handleButtonClick={handleButtonClick}/>
               {activeButton === "daily" ? (
                 <div className="forecastContainer">
                   {forecast["days"].slice(0, 10).map((day, index) => {
@@ -232,8 +172,8 @@ function App() {
                     return (
                       <div className="forecastCard" key={index}>
                         <p className="forecastDay">{dayOfWeek}</p>
-                        <p className="forecastTemp">{Math.round(day["tempmax"])} °C</p>
-                        <p>{Math.round(day["tempmin"])} °C</p>
+                        <p className="forecastTemp">{format(day["tempmax"])} °C</p>
+                        <p>{format(day["tempmin"])} °C</p>
                         <div className="forecastIcon">
                           {getWeatherIcon(day["icon"])}
                         </div>
